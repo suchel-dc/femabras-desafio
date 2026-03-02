@@ -1,13 +1,31 @@
 "use client";
 import { useState } from "react";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import ChallengeSlot from "@/components/ChallengeSlot";
 import DraggableNumber from "@/components/DraggableNumber";
 
 export default function Home(){
-  const [sequenceNumber, setSequenceNumber] = useState(["", "", "", ""]);
-  const availableNumber = ["1", "2", "3", "4"];
 
+  // Cofiguring draggable behaviors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      }
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 5,
+      }
+    })
+  );
+
+  // Temporal database to hold the numbers
+  const [sequenceNumber, setSequenceNumber] = useState(["", "", "", ""]);
+  const availableNumber = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+  // Handling drag item function
   const handleDragEnd = (event: DragEndEvent) => {
     const {over, active} = event;
 
@@ -23,8 +41,9 @@ export default function Home(){
   }
 
   return(
-    <main>
-      <DndContext onDragEnd={handleDragEnd}>
+    // Main section for the page
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 overflow-hidden touch-none">
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <h2 className="mb-12 font-bold tracking-widest opacity-80">Organize os numeros</h2>
         
         {/* The target slot */}
