@@ -1,3 +1,4 @@
+//ChallengeSlot.tsx
 "use client";
 import { useDroppable } from "@dnd-kit/core";
 
@@ -22,15 +23,15 @@ export default function ChallengeSlot({indexOrder, orderValue, onPlace}: SlotPro
         <div
         ref={setNodeRef}
         style={style} 
-        className="relative flex h-24 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-400 bg-transparent transition-all">
-      <input
-        type="text"
-        maxLength={1}
-        value={orderValue} 
-        onChange={(event) => onPlace(indexOrder, event.target.value)}
-        className="h-full w-full bg-transparent text-center text-4xl font-bold uppercase outline-none"
-        placeholder="?"
-      />
+        className="relative flex h-24 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-400 bg-transparent">
+          <input
+            type="text"
+            maxLength={1}
+            value={orderValue} 
+            onChange={(event) => onPlace(indexOrder, event.target.value)}
+            className="h-full w-full bg-transparent text-center text-4xl font-bold uppercase outline-none"
+            placeholder="?"
+          />
       <div className="absolute inset-0 pointer-events-none" />
     </div>
     );
