@@ -102,7 +102,7 @@ export default function Home(){
         <h2 className="mb-12 font-bold tracking-widest opacity-80 text-2xl uppercase text-center">{ isComplete ? "Confirmar Sequência" : "Organize os numeros"}</h2>
         
         {/* The target slot */}
-        <div className="flex gap-2 mb-12 flex-wrap justify-center max-w-93.75">
+        <div className="flex gap-2 mb-12 justify-center max-w-93.75">
           {slots.map((slot, i) => (
             <div key={i} onClick={() => {
               if(slot) handleRemove(i)
