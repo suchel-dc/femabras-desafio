@@ -15,17 +15,20 @@ export default function ChallengeSlot({indexOrder, orderValue, onPlace, onKeyDow
     const { isOver, setNodeRef } = useDroppable({
         id: `slot-${indexOrder}`,
     });
+
+    const hasValue = orderValue !== "";
     
     // The behavior when a number is hovering over the box
     const style = {
-        borderColor: isOver ? 'var(--foreground)' : 'gray',
-        backgroundColor: isOver ? 'rgba(var(--foreground-rgb), 0.1)' : 'transparent',
+        borderColor: isOver ? 'var(--foreground)' : hasValue ? 'var(--foreground)' : 'gray',
+        backgroundColor: hasValue ? 'var(--foreground)' : isOver ? 'rgba(var(--foreground-rgb), 0.1)' : 'transparent',
+        color: hasValue ? 'var(--background)' : 'var(--foreground)',
     };
     return(
      <div
         ref={setNodeRef}
         style={style} 
-        className="relative flex h-24 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-400 bg-transparent">
+        className="relative flex w-full max-w-20 aspect-4/5 items-center justify-center rounded-lg border-2 border-dashed border-gray-400 bg-transparent transition-colors">
             <input
             ref={ inputRef }
             type="text"
@@ -35,7 +38,7 @@ export default function ChallengeSlot({indexOrder, orderValue, onPlace, onKeyDow
             onFocus={(keyboard) => keyboard.target.select()}
             onClick={(event) => event.stopPropagation()} 
             onChange={(event) => onPlace(indexOrder, event.target.value)}
-            className="h-full w-full bg-transparent text-center text-4xl font-bold uppercase outline-none"
+            className={`h-full w-full bg-transparent text-center text-4xl font-bold uppercase outline-none ${hasValue ? 'text-background' : 'text-foreground'}`}
             placeholder="?"
             />
       <div className="absolute inset-0 pointer-events-none" />

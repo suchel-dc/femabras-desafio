@@ -18,6 +18,12 @@
     --foreground: var(--light-greenish);
   }
 }
+html, body {
+  /* Prevent the entire page from bouncing or pulling-to-refresh */
+  overscroll-behavior-y: contain; 
+  overflow: hidden;
+  height: 100%;
+}
 
 body {
   background: var(--dark-green);

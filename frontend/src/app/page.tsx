@@ -1,7 +1,16 @@
 // page.tsx
 "use client";
 import { useState, useRef } from "react";
-import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { 
+  DndContext, 
+  DragEndEvent,
+  DragStartEvent, 
+  PointerSensor, 
+  TouchSensor, 
+  useSensor, 
+  useSensors, 
+  DragOverlay 
+} from "@dnd-kit/core";
 import ChallengeSlot from "@/components/ChallengeSlot";
 import DraggableNumber from "@/components/DraggableNumber";
 
@@ -22,15 +31,28 @@ export default function Home(){
     })
   );
 
+  // Add this state to track what is currently being dragged
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
   // Slots now hold the whole object {id, val} or null
   const [slots, setSlots] = useState<(null | {id: string, val: string})[]>(Array(4).fill(null));
-  // 1. An array of references to the input elements
+  
+  // An array of references to the input elements
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // To get into edit mode
+  const [isEditing, setIsEditing] = useState(false);
+  
   // Temporal database to hold the numbers
   const availableNumbers = [{ id: "num-0", val: "1" }, { id: "num-1", val: "6" }, { id: "num-2", val: "2" }, { id: "num-3", val: "7" }, { id: "num-4", val: "8" }, { id: "num-5", val: "8" }, { id: "num-6", val: "4" }, { id: "num-7", val: "9" }, { id: "num-8", val: "5" }, { id: "num-9", val: "6" },];
 
   // Handling drag item function
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id.toString());
+  };
   const handleDragEnd = (event: DragEndEvent) => {
+    setIsEditing(false); //To turn off edit mode once a change is made
+    setActiveId(null); // to reset when done
     const {over, active} = event;
 
     // If the number is droped over a valid slot
@@ -46,7 +68,10 @@ export default function Home(){
         setSlots(newSlots);
       }
     }
-  };
+  }
+  
+  // To find the active item to show in the overlay
+  const activeItem = availableNumbers.find(n => n.id === activeId);
 
   // Function the handles slot's value removal
   const handleRemove = (index: number) => {
@@ -57,6 +82,9 @@ export default function Home(){
 
   // Condition to see if the slots are filled
   const isComplete = slots.every(slot => slot !== null);
+
+  // Condition to alow the tray to come back when edit button is clicked
+  const showTray = !isComplete || isEditing;
 
   // Function that handles manual input 
   const handleManualInput = (index: number, value: string) => {
@@ -95,17 +123,51 @@ export default function Home(){
     }
   }
 
+  // Handling clicks on the tray
+  const handleTrayClick = (item: {id: string, val: string}) => {
+    // Finds the index of the first empty slot (null)
+    const firstEmptyIndex = slots.findIndex(slot => slot === null);
+    // Condition if there is an empty slot, to place the item there
+    if (firstEmptyIndex !== -1) {
+      const newSlots = [...slots];
+      newSlots[firstEmptyIndex] = item;
+      setSlots(newSlots);
+
+      // Moving focus to the next empty slot for the keyboard/input
+      const nextIndex = firstEmptyIndex + 1;
+      if (nextIndex < slots.length) {
+        inputRefs.current[nextIndex]?.focus();
+      }
+    }
+  };
+
+  // Handling edit butto behaviour
+  const handleEdit = () => {
+    setIsEditing(true);
+    // To force focus to the last slot (index 3)
+    setTimeout(() => {
+      inputRefs.current[3]?.focus();
+    }, 10); // Small timeout to ensure the element is focusable after state change
+  };
+
   return(
     // Main section for the page
     <main className="flex min-h-screen flex-col items-center justify-center p-8 overflow-hidden touch-none">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext 
+        sensors={sensors} 
+        onDragStart={handleDragStart} 
+        onDragEnd={handleDragEnd}
+      >
         <h2 className="mb-12 font-bold tracking-widest opacity-80 text-2xl uppercase text-center">{ isComplete ? "Confirmar Sequência" : "Organize os numeros"}</h2>
         
         {/* The target slot */}
-        <div className="flex gap-2 mb-12 justify-center max-w-93.75">
+        <div className="flex flew-row justify-center gap-2 sm:gap-4 mb-12 w-full max-w-md px-2 overflow-visible">
           {slots.map((slot, i) => (
-            <div key={i} onClick={() => {
-              if(slot) handleRemove(i)
+            <div
+              className="flex-1 max-w-20"
+              key={i}
+              onClick={() => {
+                if(slot) handleRemove(i)
               }
             }>
               <ChallengeSlot 
@@ -121,21 +183,27 @@ export default function Home(){
 
         {/* The source number to drag from */}
         {/* DYNAMIC SECTION: tray number or buttons */}
-        {!isComplete ? (
+        {showTray ? (
 
-          // Shows the source tray number if not completed
-          <div className="flex gap-6 flex-wrap justify-center max-w-93.75">
+          // This shows the tray if the numbers are not completed or if edit button was clicked
+          <div className="flex gap-6 flex-wrap justify-center max-w-93.75 max-h-70 overflow-y-auto p-4 scrollbar-hide overscroll-behavior-contain">
             {
               availableNumbers.map((item) => {
                 // filtering out the used nomber by id
                 const isUsed = slots.some(slot => slot?.id === item.id);
                 if (isUsed) return null;
-                return <DraggableNumber key={item.id} id={item.id} value={item.val} />}
-              )
-            }
+                return <DraggableNumber 
+                  key={item.id} 
+                  id={item.id} 
+                  value={item.val}
+                  onClick={() => {
+                    handleTrayClick(item);
+                    setIsEditing(false);  
+              }}/>;
+            })}
           </div>
         ) : (
-          /* Show the Control Buttons if complete */
+          /* Show the Control Buttons if complete and not edditing */
           <div className="flex gap-4 animate-in fade-in zoom-in duration-300">
             <button 
               onClick={() => {/* Logic to check against secret key */}}
@@ -145,16 +213,21 @@ export default function Home(){
             </button>
             
             <button 
-              onClick={() => {
-                  // Logic to "Edit" - perhaps clear the last slot or all slots?
-                  setSlots(Array(4).fill(null)); 
-              }}
+              onClick={handleEdit}
               className="px-8 py-3 border-2 border-foreground text-foreground font-bold rounded-lg hover:bg-foreground/10 transition-colors"
             >
               EDITAR
             </button>
           </div>
         )}
+        {/* The DragOverlay is the "Magic Layer" */}
+        <DragOverlay adjustScale={true}>
+          {activeId ? (
+            <div className="flex h-17 sm:h-20 w-17 sm:w-20 items-center justify-center rounded-lg bg-foreground text-background text-2xl font-bold shadow-2xl opacity-90 cursor-grabbing">
+              {activeItem?.val}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </main>
   );
