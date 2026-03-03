@@ -16,8 +16,9 @@ export default function DraggableNumber({ id, value, onClick }: DraggableProps){
         transform: CSS.Translate.toString(transform),
         transition: transform ? "none" : "transform 200ms ease",
         zIndex: transform ? 999 : 1,
-        opacity: isDragging ? 0.3 : 1,
+        opacity: isDragging ? 0 : 1,
         touchAction: "none",
+        WebkitUserDrag: "none",
     };
 
     return(
@@ -27,6 +28,6 @@ export default function DraggableNumber({ id, value, onClick }: DraggableProps){
         {...listeners}
         {...attributes}
         onClick={onClick}
-        className="flex h-16 w-16 cursor-grab items-center justify-center rounded-full bg-foreground text-background text-2xl font-black shadow-xl active:cursor-grabbing active:scale-110 transition-none" >{value}</div>
+        className="flex h-16 w-16 select-none cursor-grab items-center justify-center rounded-full bg-foreground text-background text-2xl font-black shadow-xl active:cursor-grabbing active:scale-110 transition-none" >{value}</div>
     );
 }

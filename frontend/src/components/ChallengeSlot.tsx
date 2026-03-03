@@ -8,9 +8,11 @@ interface SlotProps {
     onPlace: (indexOrder: number, orderValue: string) => void;
     onKeyDown: (key: React.KeyboardEvent) => void;
     inputRef: (element: HTMLInputElement | null) => void;
+    onFocus: () => void;
+    onBlur: () => void;
 }
 
-export default function ChallengeSlot({indexOrder, orderValue, onPlace, onKeyDown, inputRef}: SlotProps){
+export default function ChallengeSlot({indexOrder, orderValue, onPlace, onKeyDown, inputRef, onFocus, onBlur}: SlotProps){
     // Creates a unique id for the slot
     const { isOver, setNodeRef } = useDroppable({
         id: `slot-${indexOrder}`,
@@ -37,7 +39,11 @@ export default function ChallengeSlot({indexOrder, orderValue, onPlace, onKeyDow
             maxLength={1}
             value={ orderValue }
             onKeyDown={ onKeyDown }
-            onFocus={(keyboard) => keyboard.target.select()}
+            onFocus={(keyboard) => {
+                keyboard.target.select();
+                onFocus(); // Specifies which index is active
+            }}
+            onBlur={onBlur}
             onClick={(event) => event.stopPropagation()} 
             onChange={(event) => onPlace(indexOrder, event.target.value)}
             className={`h-full w-full bg-transparent text-center text-4xl font-bold uppercase outline-none ${hasValue ? 'text-background' : 'text-foreground'}`}

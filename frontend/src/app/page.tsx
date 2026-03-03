@@ -1,6 +1,6 @@
 // page.tsx
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useSyncExternalStore } from "react";
 import { 
   DndContext, 
   DragEndEvent,
@@ -14,7 +14,19 @@ import {
 import ChallengeSlot from "@/components/ChallengeSlot";
 import DraggableNumber from "@/components/DraggableNumber";
 
+// Dummy store that returns false on the server and true on the client
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,  // Client value
+    () => false  // Server (SSR) value
+  );
+}
+
 export default function Home(){
+  const isMounted = useIsMounted();
+
 
   // Cofiguring draggable behaviors
   const sensors = useSensors(
@@ -25,8 +37,8 @@ export default function Home(){
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 0,
-        tolerance: 1,
+        delay: 200,
+        tolerance: 5,
       }
     })
   );
@@ -42,6 +54,9 @@ export default function Home(){
 
   // To get into edit mode
   const [isEditing, setIsEditing] = useState(false);
+
+  // State to track the cursor
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   
   // Temporal database to hold the numbers
   const availableNumbers = [{ id: "num-0", val: "1" }, { id: "num-1", val: "6" }, { id: "num-2", val: "2" }, { id: "num-3", val: "7" }, { id: "num-4", val: "8" }, { id: "num-5", val: "8" }, { id: "num-6", val: "4" }, { id: "num-7", val: "9" }, { id: "num-8", val: "5" }, { id: "num-9", val: "6" },];
@@ -125,15 +140,15 @@ export default function Home(){
 
   // Handling clicks on the tray
   const handleTrayClick = (item: {id: string, val: string}) => {
-    // Finds the index of the first empty slot (null)
-    const firstEmptyIndex = slots.findIndex(slot => slot === null);
-    // Condition if there is an empty slot, to place the item there
-    if (firstEmptyIndex !== -1) {
-      const newSlots = [...slots];
-      newSlots[firstEmptyIndex] = item;
-      setSlots(newSlots);
 
-      // Preventing the mobile keyboard from jumping out
+    const newSlots = [...slots];
+    const targetIndex = focusedIndex !== null ? focusedIndex : slots.findIndex(s => s === null);
+    if (targetIndex !== -1) {
+      newSlots[targetIndex] = item;
+      setSlots(newSlots);
+      
+      // Clears the focus or move it forward
+      setFocusedIndex(null); 
       setIsEditing(false);
     }
   };
@@ -147,10 +162,14 @@ export default function Home(){
     }, 10); // Small timeout to ensure the element is focusable after state change
   };
 
+  // Use the hook to guard the render
+  if (!isMounted) return <main className="min-h-screen bg-background" />;
+
   return(
     // Main section for the page
     <main className="flex min-h-screen flex-col items-center justify-center p-8 overflow-hidden touch-none">
-      <DndContext 
+      <DndContext
+        id="femabras-challenge" 
         sensors={sensors} 
         onDragStart={handleDragStart} 
         onDragEnd={handleDragEnd}
@@ -172,7 +191,9 @@ export default function Home(){
                 orderValue={slot?.val || ""}
                 inputRef={(element) => (inputRefs.current[i] = element)} 
                 onPlace={handleManualInput}
-                onKeyDown={(key) => handleKeyDown(key, i)} 
+                onKeyDown={(key) => handleKeyDown(key, i)}
+                onFocus={() => setFocusedIndex(i)}
+                onBlur={() => setTimeout(() => setFocusedIndex(null), 100)}
               />
             </div>
           ))}
