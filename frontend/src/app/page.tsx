@@ -133,11 +133,8 @@ export default function Home(){
       newSlots[firstEmptyIndex] = item;
       setSlots(newSlots);
 
-      // Moving focus to the next empty slot for the keyboard/input
-      const nextIndex = firstEmptyIndex + 1;
-      if (nextIndex < slots.length) {
-        inputRefs.current[nextIndex]?.focus();
-      }
+      // Preventing the mobile keyboard from jumping out
+      setIsEditing(false);
     }
   };
 
