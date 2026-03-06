@@ -1,4 +1,4 @@
-/* globals.css */
+/* femabras/frontend/src/app/globals.css */
 @import "tailwindcss";
 
 :root {
@@ -18,14 +18,42 @@
     --foreground: var(--light-greenish);
   }
 }
-html, body {
-  /* Prevent the entire page from bouncing or pulling-to-refresh */
-  overscroll-behavior-y: contain; 
-  overflow: hidden;
-  height: 100%;
-}
 
 body {
   background: var(--dark-green);
   color: var(--light-greenish);
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-8px);
+  }
+  80% {
+    transform: translateX(8px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.shake-wrapper {
+  animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  background-color: rgba(239, 68, 68, 0.35) !important;
+  border-color: #ef4444 !important;
+  border-width: 4px !important;
+  border-style: solid !important;
+  border-radius: 0.5rem !important;
+}
+
+.shake-wrapper * {
+  background-color: transparent !important;
 }

@@ -14,11 +14,15 @@
 **/out/
 **/build/
 **/.turbo/
+.cache/
 
 # --- Environment & Security ---
 **/.env*
+!**/.env.example
 **/.vercel
 *.pem
+# Ignore local workspace settings that might contain paths
+.vscode/
 
 # --- Testing & Debug Logs ---
 **/coverage/
@@ -32,3 +36,16 @@
 **/next-env.d.ts
 **/.DS_Store
 **/*.db
+Thumbs.db
+
+# --- Go Backend ---
+**/tmp/
+**/bin/
+# This catches all compiled binaries in the backend folder
+backend/main
+backend/server
+backend/*.exe
+backend/*.out
+vendor/
+# If you use 'air' for live reloading
+.air.toml

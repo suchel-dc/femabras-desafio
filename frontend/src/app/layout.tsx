@@ -1,4 +1,4 @@
-// layout.tsx
+// frontend/src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
@@ -8,10 +8,9 @@ const chillax = localFont({
   variable: "--font-local",
 });
 
-
 export const metadata: Metadata = {
   title: "Femabras",
-  description: "O seu sucesso e o nosso foco",
+  description: "O seu sucesso é o nosso foco",
 };
 
 export default function RootLayout({
@@ -21,11 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-pt">
-      <body
-        className={`${chillax.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${chillax.variable} antialiased`}>{children}</body>
     </html>
   );
 }
